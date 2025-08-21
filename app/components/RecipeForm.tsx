@@ -1,5 +1,6 @@
+import { Picker } from '@react-native-picker/picker';
 import React, { useState } from "react";
-import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View, StyleSheet, StatusBar } from "react-native";
+import { Modal, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Toast from 'react-native-toast-message';
 
 type Ingredient = {
@@ -37,6 +38,22 @@ type RecipeFormProps = {
     servings?: number;
   };
 };
+
+// Predefined categories for the dropdown
+const categories = [
+  { label: "Select a category", value: "" },
+  { label: "Appetizer", value: "Appetizer" },
+  { label: "Main Course", value: "Main Course" },
+  { label: "Dessert", value: "Dessert" },
+  { label: "Breakfast", value: "Breakfast" },
+  { label: "Lunch", value: "Lunch" },
+  { label: "Dinner", value: "Dinner" },
+  { label: "Snack", value: "Snack" },
+  { label: "Soup", value: "Soup" },
+  { label: "Salad", value: "Salad" },
+  { label: "Beverage", value: "Beverage" },
+  { label: "Side Dish", value: "Side Dish" },
+];
 
 export default function RecipeForm({ visible, onClose, onSubmit, initialData = {} }: RecipeFormProps) {
   const [title, setTitle] = useState(initialData.title || "");
@@ -88,7 +105,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     initialData.imageUrl,
     initialData.prepTimeMins,
     initialData.cookTimeMins,
-    initialData.servings
+    initialData.servings,
   ]);
 
   const handleAddIngredient = () => {
@@ -121,18 +138,15 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     }
 
     // Check ingredients
-    const validIngredients = ingredients.filter(ing => 
-      ing.name.trim() && ing.quantity.trim()
-    );
+    const validIngredients = ingredients.filter((ing) => ing.name.trim() && ing.quantity.trim());
 
     if (validIngredients.length === 0) {
       errors.push("At least one ingredient with name and quantity is required");
     }
 
     // Check for incomplete ingredients (partial data)
-    const incompleteIngredients = ingredients.some(ing => 
-      (ing.name.trim() && !ing.quantity.trim()) || 
-      (!ing.name.trim() && ing.quantity.trim())
+    const incompleteIngredients = ingredients.some(
+      (ing) => (ing.name.trim() && !ing.quantity.trim()) || (!ing.name.trim() && ing.quantity.trim())
     );
 
     if (incompleteIngredients) {
@@ -140,7 +154,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     }
 
     // Check steps (at least one non-empty step)
-    const validSteps = steps.filter(step => step.trim());
+    const validSteps = steps.filter((step) => step.trim());
     if (validSteps.length === 0) {
       errors.push("At least one instruction step is required");
     }
@@ -159,9 +173,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     }
 
     // Validate quantities are numbers
-    const invalidQuantities = ingredients.some(ing => 
-      ing.quantity.trim() && isNaN(parseFloat(ing.quantity))
-    );
+    const invalidQuantities = ingredients.some((ing) => ing.quantity.trim() && isNaN(parseFloat(ing.quantity)));
 
     if (invalidQuantities) {
       errors.push("All ingredient quantities must be valid numbers");
@@ -169,7 +181,9 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
 
     // For add mode, show more specific empty form guidance
     if (!isEditMode && validIngredients.length === 0 && validSteps.length === 0 && !title.trim()) {
-      return ["Please fill out the recipe form before submitting:\n• Add a recipe title\n• Add at least one ingredient\n• Add at least one instruction step"];
+      return [
+        "Please fill out the recipe form before submitting:\n• Add a recipe title\n• Add at least one ingredient\n• Add at least one instruction step",
+      ];
     }
 
     return errors;
@@ -177,13 +191,13 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
 
   const handleSubmit = async () => {
     const validationErrors = validateForm();
-    
+
     if (validationErrors.length > 0) {
       Toast.show({
-        type: 'error',
-        text1: 'Validation Error',
-        text2: validationErrors.join('\n'),
-        position: 'top',
+        type: "error",
+        text1: "Validation Error",
+        text2: validationErrors.join("\n"),
+        position: "top",
         topOffset: 60,
         visibilityTime: 4000,
         autoHide: true,
@@ -192,11 +206,9 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     }
 
     // Filter out empty ingredients and steps
-    const validIngredients = ingredients.filter(ing => 
-      ing.name.trim() && ing.quantity.trim()
-    );
+    const validIngredients = ingredients.filter((ing) => ing.name.trim() && ing.quantity.trim());
 
-    const validSteps = steps.filter(step => step.trim());
+    const validSteps = steps.filter((step) => step.trim());
 
     const input: RecipeInput = {
       title: title.trim(),
@@ -217,10 +229,10 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
     try {
       await onSubmit(input);
       Toast.show({
-        type: 'success',
-        text1: 'Success',
-        text2: `Recipe ${initialData.id ? 'updated' : 'added'} successfully!`,
-        position: 'top',
+        type: "success",
+        text1: "Success",
+        text2: `Recipe ${initialData.id ? "updated" : "added"} successfully!`,
+        position: "top",
         topOffset: 60,
         visibilityTime: 3000,
         autoHide: true,
@@ -228,10 +240,10 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
       onClose();
     } catch (error: any) {
       Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: `Failed to ${initialData.id ? 'update' : 'add'} recipe: ${error.message}`,
-        position: 'top',
+        type: "error",
+        text1: "Error",
+        text2: `Failed to ${initialData.id ? "update" : "add"} recipe: ${error.message}`,
+        position: "top",
         topOffset: 60,
         visibilityTime: 4000,
         autoHide: true,
@@ -240,12 +252,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
   };
 
   return (
-    <Modal 
-      visible={visible} 
-      animationType="slide" 
-      transparent={false}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <StatusBar backgroundColor="#0D9488" barStyle="light-content" />
       <View style={styles.container}>
         {/* Header */}
@@ -253,15 +260,13 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {initialData.id ? "Edit Recipe" : "New Recipe"}
-          </Text>
+          <Text style={styles.headerTitle}>{initialData.id ? "Edit Recipe" : "New Recipe"}</Text>
           <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -270,7 +275,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
           {/* Basic Info Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Basic Information</Text>
-            
+
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Recipe Title *</Text>
               <TextInput
@@ -284,13 +289,18 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Category</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Dessert, Main Course, Appetizer"
-                value={category}
-                onChangeText={setCategory}
-                placeholderTextColor="#9CA3AF"
-              />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={category}
+                  onValueChange={(itemValue: string) => setCategory(itemValue)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                >
+                  {categories.map((cat) => (
+                    <Picker.Item key={cat.value} label={cat.label} value={cat.value} />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
             <View style={styles.inputGroup}>
@@ -311,7 +321,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
           {/* Recipe Details Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Recipe Details</Text>
-            
+
             <View style={styles.timeServingsRow}>
               <View style={styles.timeServingsItem}>
                 <Text style={styles.inputLabel}>Prep (mins)</Text>
@@ -369,16 +379,13 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                 <Text style={styles.addButtonSmallText}>+ Add</Text>
               </TouchableOpacity>
             </View>
-            
+
             {ingredients.map((ingredient, index) => (
               <View key={index} style={styles.ingredientCard}>
                 <View style={styles.ingredientHeader}>
                   <Text style={styles.ingredientNumber}>{index + 1}</Text>
                   {ingredients.length > 1 && (
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => handleRemoveIngredient(index)}
-                    >
+                    <TouchableOpacity style={styles.removeButton} onPress={() => handleRemoveIngredient(index)}>
                       <Text style={styles.removeButtonText}>✕</Text>
                     </TouchableOpacity>
                   )}
@@ -388,9 +395,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                   placeholder="Ingredient name *"
                   value={ingredient.name}
                   onChangeText={(text) =>
-                    setIngredients(
-                      ingredients.map((ing, i) => (i === index ? { ...ing, name: text } : ing))
-                    )
+                    setIngredients(ingredients.map((ing, i) => (i === index ? { ...ing, name: text } : ing)))
                   }
                   placeholderTextColor="#9CA3AF"
                 />
@@ -400,9 +405,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                     placeholder="Amount *"
                     value={ingredient.quantity}
                     onChangeText={(text) =>
-                      setIngredients(
-                        ingredients.map((ing, i) => (i === index ? { ...ing, quantity: text } : ing))
-                      )
+                      setIngredients(ingredients.map((ing, i) => (i === index ? { ...ing, quantity: text } : ing)))
                     }
                     keyboardType="numeric"
                     placeholderTextColor="#9CA3AF"
@@ -412,9 +415,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                     placeholder="Unit"
                     value={ingredient.unit}
                     onChangeText={(text) =>
-                      setIngredients(
-                        ingredients.map((ing, i) => (i === index ? { ...ing, unit: text } : ing))
-                      )
+                      setIngredients(ingredients.map((ing, i) => (i === index ? { ...ing, unit: text } : ing)))
                     }
                     placeholderTextColor="#9CA3AF"
                   />
@@ -431,7 +432,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                 <Text style={styles.addButtonSmallText}>+ Add</Text>
               </TouchableOpacity>
             </View>
-            
+
             {steps.map((step, index) => (
               <View key={index} style={styles.stepCard}>
                 <View style={styles.stepHeader}>
@@ -439,10 +440,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                     <Text style={styles.stepNumberText}>{index + 1}</Text>
                   </View>
                   {steps.length > 1 && (
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => handleRemoveStep(index)}
-                    >
+                    <TouchableOpacity style={styles.removeButton} onPress={() => handleRemoveStep(index)}>
                       <Text style={styles.removeButtonText}>✕</Text>
                     </TouchableOpacity>
                   )}
@@ -451,9 +449,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
                   style={[styles.input, styles.textArea, styles.stepInput]}
                   placeholder={`Describe step ${index + 1}...`}
                   value={step}
-                  onChangeText={(text) =>
-                    setSteps(steps.map((s, i) => (i === index ? text : s)))
-                  }
+                  onChangeText={(text) => setSteps(steps.map((s, i) => (i === index ? text : s)))}
                   multiline
                   numberOfLines={2}
                   textAlignVertical="top"
@@ -475,18 +471,18 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: "#F0FDFA",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingTop: 44,
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: '#0D9488',
+    backgroundColor: "#0D9488",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -495,30 +491,30 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   closeButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   saveButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 18,
   },
   saveButtonText: {
-    color: '#0D9488',
+    color: "#0D9488",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   scrollView: {
     flex: 1,
@@ -527,27 +523,27 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
     padding: 16,
     elevation: 2,
-    shadowColor: '#0D9488',
+    shadowColor: "#0D9488",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#134E4A',
+    fontWeight: "700",
+    color: "#134E4A",
     marginBottom: 16,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   inputGroup: {
@@ -555,26 +551,41 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: "600",
+    color: "#374151",
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: "#D1D5DB",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
+    color: "#111827",
+  },
+  pickerContainer: {
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  picker: {
+    height: 44,
+    color: "#111827",
+  },
+  pickerItem: {
+    fontSize: 15,
+    color: "#111827",
   },
   textArea: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   timeServingsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 16,
   },
@@ -582,35 +593,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButtonSmall: {
-    backgroundColor: '#14B8A6',
+    backgroundColor: "#14B8A6",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   addButtonSmallText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   ingredientCard: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: "#F0FDFA",
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#B2F5EA',
+    borderColor: "#B2F5EA",
   },
   ingredientHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   ingredientNumber: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#0D9488',
-    backgroundColor: '#FFFFFF',
+    fontWeight: "600",
+    color: "#0D9488",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -619,20 +630,20 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EF4444",
+    alignItems: "center",
+    justifyContent: "center",
   },
   removeButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   ingredientInput: {
     marginBottom: 8,
   },
   quantityUnitRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   quantityInput: {
@@ -642,31 +653,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stepCard: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: "#F0FDFA",
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#B2F5EA',
+    borderColor: "#B2F5EA",
   },
   stepHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   stepNumber: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#14B8A6',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#14B8A6",
+    alignItems: "center",
+    justifyContent: "center",
   },
   stepNumberText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   stepInput: {
     marginBottom: 0,

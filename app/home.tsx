@@ -1,5 +1,6 @@
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, useMutation, useQuery } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
 import { jwtDecode } from "jwt-decode";
@@ -11,7 +12,7 @@ import RecipeDetails from "./components/RecipeDetails";
 import RecipeForm from "./components/RecipeForm";
 
 const client = new ApolloClient({
-  uri: "http://192.168.1.201:4000/graphql",
+  uri: "http://localhost:4000/graphql",
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
@@ -120,8 +121,24 @@ type Recipe = {
   createdBy: { id: string; email: string };
 };
 
+const categories = [
+  { label: "Select a category", value: "" },
+  { label: "Appetizer", value: "Appetizer" },
+  { label: "Main Course", value: "Main Course" },
+  { label: "Dessert", value: "Dessert" },
+  { label: "Breakfast", value: "Breakfast" },
+  { label: "Lunch", value: "Lunch" },
+  { label: "Dinner", value: "Dinner" },
+  { label: "Snack", value: "Snack" },
+  { label: "Soup", value: "Soup" },
+  { label: "Salad", value: "Salad" },
+  { label: "Beverage", value: "Beverage" },
+  { label: "Side Dish", value: "Side Dish" },
+];
+
 function HomeContent() {
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -279,19 +296,6 @@ function HomeContent() {
     setShowForm(true);
   };
 
-  const handleSeeMore = () => {
-    Toast.show({
-      type: 'error',
-      text1: 'Please Sign In',
-      text2: 'Sign in to view more recipes!',
-      position: 'top',
-      topOffset: 60,
-      visibilityTime: 4000,
-      autoHide: true,
-      onPress: () => router.push("/login"),
-    });
-  };
-
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("userToken");
@@ -393,8 +397,9 @@ function HomeContent() {
 
   const filteredRecipes = data?.recipes?.nodes?.filter(
     (recipe: Recipe) =>
-      recipe.title.toLowerCase().includes(search.toLowerCase()) ||
-      (recipe.category && recipe.category.toLowerCase().includes(search.toLowerCase()))
+      (recipe.title.toLowerCase().includes(search.toLowerCase()) ||
+        (recipe.category && recipe.category.toLowerCase().includes(search.toLowerCase()))) &&
+      (!selectedCategory || (recipe.category && recipe.category === selectedCategory))
   ) || [];
 
   // Limit to 3 recipes for non-logged-in users
@@ -446,7 +451,7 @@ function HomeContent() {
           </TouchableOpacity>
         </Modal>
 
-        {/* Search and Add Section */}
+        {/* Search and Filter Section */}
         <View style={styles.actionSection}>
           <View style={styles.searchContainer}>
             <Text style={styles.searchIcon}>🔍</Text>
@@ -457,6 +462,22 @@ function HomeContent() {
               value={search}
               onChangeText={setSearch}
             />
+          </View>
+          
+          <View style={styles.filterContainer}>
+            <Picker
+              selectedValue={selectedCategory}
+              onValueChange={(itemValue: string) => setSelectedCategory(itemValue)}
+              style={styles.categoryPicker}
+            >
+              {categories.map((category) => (
+                <Picker.Item
+                  key={category.value}
+                  label={category.label}
+                  value={category.value}
+                />
+              ))}
+            </Picker>
           </View>
           
           <TouchableOpacity
@@ -492,7 +513,7 @@ function HomeContent() {
               <Text style={styles.emptyStateEmoji}>🍽️</Text>
               <Text style={styles.emptyStateText}>No recipes found</Text>
               <Text style={styles.emptyStateSubtext}>
-                {search ? "Try a different search term" : "Be the first to add a recipe!"}
+                {search || selectedCategory ? "Try a different search term or category" : "Be the first to add a recipe!"}
               </Text>
             </View>
           ) : (
@@ -516,7 +537,18 @@ function HomeContent() {
               {!userToken && filteredRecipes.length > 3 && (
                 <TouchableOpacity
                   style={styles.seeMoreButton}
-                  onPress={handleSeeMore}
+                  onPress={() => {
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Please Sign In',
+                      text2: 'Sign in to view more recipes!',
+                      position: 'top',
+                      topOffset: 60,
+                      visibilityTime: 4000,
+                      autoHide: true,
+                      onPress: () => router.push("/login"),
+                    });
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.seeMoreButtonText}>See More Recipes</Text>
@@ -545,6 +577,7 @@ function HomeContent() {
           recipe={selectedRecipe}
           onClose={() => setSelectedRecipe(null)}
         />
+        
         <Toast />
       </LinearGradient>
     </SafeAreaView>
@@ -660,7 +693,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#E0F2F1',
+    borderColor: '#008080', // Changed to teal
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -677,6 +710,23 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     color: '#333',
+    fontWeight: '500',
+  },
+  filterContainer: {
+    width: 120, // Fixed width for dropdown
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Matches search bar
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#008080', // Teal border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryPicker: {
+    height: 50,
+    color: '#008080', // Teal text
     fontWeight: '500',
   },
   addButton: {
