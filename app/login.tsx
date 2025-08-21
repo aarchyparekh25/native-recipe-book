@@ -8,7 +8,7 @@ import { Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StatusBa
 const {  height } = Dimensions.get('window')
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql", // Replace with your machine's IP
+  uri: "http://192.168.1.201:4000/graphql", // Replace with your machine's IP
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

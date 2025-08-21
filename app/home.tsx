@@ -12,7 +12,7 @@ import RecipeDetails from "./components/RecipeDetails";
 import RecipeForm from "./components/RecipeForm";
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql",
+  uri: "http://192.168.1.201:4000/graphql",
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

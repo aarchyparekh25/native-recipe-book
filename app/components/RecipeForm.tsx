@@ -274,7 +274,7 @@ export default function RecipeForm({ visible, onClose, onSubmit, initialData = {
         >
           {/* Basic Info Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Basic Information</Text>
+            <Text style={styles.sectionTitle}>Recipe Information</Text>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Recipe Title *</Text>
